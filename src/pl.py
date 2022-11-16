@@ -20,8 +20,8 @@ class ModulePL(pl.LightningModule):
 
         self.train_acc = Accuracy()
         self.val_acc = Accuracy()
-        self.train_roc_auc = AUROC()
-        self.val_roc_auc = AUROC()
+        self.train_roc_auc = AUROC(num_classes=out_dim)
+        self.val_roc_auc = AUROC(num_classes=out_dim)
 
     def forward(self, imgs: torch.Tensor) -> tp.Any:
         return self.model(imgs)
