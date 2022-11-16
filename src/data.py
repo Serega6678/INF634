@@ -2,12 +2,14 @@ from pathlib import Path
 import typing as tp
 
 import cv2
-from torchvision.transforms import Compose, Normalize, ToTensor
+from torchvision.transforms import Compose, Normalize, ColorJitter, ToTensor, ToPILImage, RandomApply
 from torch.utils.data import Dataset
 
 
 def transforms():
     return Compose([
+        ToPILImage(),
+        RandomApply([ColorJitter(0.05, 0.05, 0.05)], p=0.5),
         ToTensor(),
         Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
     ])
