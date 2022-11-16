@@ -33,9 +33,14 @@ class ModulePL(pl.LightningModule):
         loss = self.criterion(output, target)
         preds = output.argmax(-1)
         self.train_acc(preds, target)
+        self.train_roc_auc(output, target)
         self.log("train_loss", loss)
         self.log("train_accuracy", self.train_acc)
         return loss
+
+    def training_epoch_end(self, outputs) -> None:
+        self.log("train_accuracy_epoch", self.train_acc)
+        self.log("train_rocauc_epoch", self.train_roc_auc)
 
     def validation_step(self, val_batch: tp.Dict[str, tp.Any], batch_idx: tp.Any) -> None:
         imgs = val_batch["img"]
@@ -44,8 +49,13 @@ class ModulePL(pl.LightningModule):
         loss = self.criterion(output, target)
         preds = output.argmax(-1)
         self.val_acc(preds, target)
+        self.val_roc_auc(output, target)
         self.log("val_loss", loss)
         self.log("val_accuracy", self.val_acc)
+
+    def validation_epoch_end(self, outputs) -> None:
+        self.log("val_accuracy_epoch", self.val_acc)
+        self.log("val_rocauc_epoch", self.val_roc_auc)
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
