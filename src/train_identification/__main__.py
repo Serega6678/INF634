@@ -25,3 +25,4 @@ if __name__ == "__main__":
         max_epochs=20,
     )
     trainer.fit(model, datamodule)
+    trainer.test(model, datamodule)
