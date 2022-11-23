@@ -13,7 +13,8 @@ if __name__ == "__main__":
             ModelCheckpoint(
                 dirpath="./checkpoints/FaceID",
                 monitor="val_accuracy",
-                filename="{epoch}-{val_accuracy:.4f}-{val_loss:.4f}"
+                filename="{epoch}-{val_accuracy:.4f}-{val_loss:.4f}",
+                mode="max",
             ),
             LearningRateMonitor(logging_interval='step'),
         ],
