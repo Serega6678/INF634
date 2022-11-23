@@ -3,6 +3,7 @@ import typing as tp
 import torch
 from torch.utils.data import random_split, DataLoader
 import torch.nn as nn
+from torch.optim.lr_scheduler import MultiStepLR
 from torchmetrics import Accuracy, AUROC
 import pytorch_lightning as pl
 
@@ -59,7 +60,14 @@ class ModulePL(pl.LightningModule):
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
-        return optimizer
+        scheduler = MultiStepLR(optimizer, [8, 14], 0.1, verbose=True)
+        return {
+            "optimizer": optimizer,
+            "lr_scheduler": {
+                "scheduler": scheduler,
+                "interval": "epoch",
+            },
+        }
 
 
 class DataModulePL(pl.LightningDataModule):

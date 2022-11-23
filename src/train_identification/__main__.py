@@ -1,5 +1,5 @@
 from pytorch_lightning import Trainer
-from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor
 from pytorch_lightning.loggers import WandbLogger
 
 from src.pl import ModulePL, DataModulePL
@@ -9,11 +9,14 @@ if __name__ == "__main__":
     print("Number of classes:", datamodule.base_dataset.num_classes)
     model = ModulePL(datamodule.base_dataset.num_classes)
     trainer = Trainer(
-        callbacks=[ModelCheckpoint(
-            dirpath="./checkpoints/FaceID",
-            monitor="val_loss",
-            filename="{epoch}-{val_loss:.2f}"
-        )],
+        callbacks=[
+            ModelCheckpoint(
+                dirpath="./checkpoints/FaceID",
+                monitor="val_accuracy",
+                filename="{epoch}-{val_accuracy:.4f}-{val_loss:.4f}"
+            ),
+            LearningRateMonitor(logging_interval='step'),
+        ],
         logger=WandbLogger(project="INF634_FaceId"),
         num_sanity_val_steps=2,
         log_every_n_steps=10,
