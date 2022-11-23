@@ -17,5 +17,6 @@ if __name__ == "__main__":
         logger=WandbLogger(project="INF634_FaceId"),
         num_sanity_val_steps=2,
         log_every_n_steps=10,
+        max_epochs=20,
     )
     trainer.fit(model, datamodule)
