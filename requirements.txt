@@ -1,0 +1,8 @@
+torch~=1.13.0
+torchmetrics~=0.10.2
+opencv-python~=4.6.0.66
+torchvision~=0.14.0
+numpy~=1.23.4
+Pillow~=9.3.0
+requests~=2.28.1
+wandb~=0.13.5

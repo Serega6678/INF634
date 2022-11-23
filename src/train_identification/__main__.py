@@ -6,6 +6,7 @@ from src.pl import ModulePL, DataModulePL
 
 if __name__ == "__main__":
     datamodule = DataModulePL("./data")
+    print("Number of classes:", datamodule.base_dataset.num_classes)
     model = ModulePL(datamodule.base_dataset.num_classes)
     trainer = Trainer(
         callbacks=[ModelCheckpoint(

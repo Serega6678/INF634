@@ -33,7 +33,7 @@ class LFWDataset(Dataset):
 
     def __getitem__(self, idx: int) -> tp.Dict[str, tp.Any]:
         img = cv2.imread(self.face_paths[idx])
-        img = cv2.resize(img, (224, 224))
+        img = cv2.resize(img, (112, 112))
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         if self.transform is not None:
             img = self.transform(img)
