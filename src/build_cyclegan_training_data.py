@@ -3,6 +3,7 @@ import shutil
 import sys
 
 from sklearn.model_selection import GroupShuffleSplit
+from tqdm import tqdm
 
 from data import LFWDataset
 
@@ -18,7 +19,7 @@ if __name__ == "__main__":
         test_paths = [dataset.face_paths[i] for i in test_idx]
         test_masks = [dataset.face_is_open[i] for i in test_idx]
 
-        for path, face_type in zip(train_paths, train_masks):
+        for path, face_type in tqdm(zip(train_paths, train_masks), total=len(train_paths)):
             filename = path.split("/")[-1]
 
             dst = output_path + "/" + ("trainA" if face_type else "trainB")
@@ -30,7 +31,7 @@ if __name__ == "__main__":
 
             shutil.copyfile(path, dst)
 
-        for path, face_type in zip(test_paths, test_masks):
+        for path, face_type in tqdm(zip(test_paths, test_masks), total=len(test_paths)):
             filename = path.split("/")[-1]
 
             dst = output_path + "/" + ("testA" if face_type else "testB")
