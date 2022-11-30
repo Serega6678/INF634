@@ -11,10 +11,14 @@ from src.data import LFWDataset, transforms
 
 
 class ModulePL(pl.LightningModule):
-    def __init__(self, out_dim: int) -> None:
+    def __init__(self, out_dim: int, backbone: tp.Optional[str] = None, hub: tp.Optional[str] = None) -> None:
         super(ModulePL, self).__init__()
+        if backbone is None:
+            backbone = "resnet18"
+        if hub is None:
+            hub = "pytorch/vision:v0.10.0"
         self.model = nn.Sequential(
-            torch.hub.load("pytorch/vision:v0.10.0", "resnet18", pretrained=True),
+            torch.hub.load(hub, backbone, pretrained=True),
             nn.Linear(1000, out_dim)
         )
         self.criterion = torch.nn.CrossEntropyLoss()
