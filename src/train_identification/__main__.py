@@ -13,8 +13,8 @@ if __name__ == "__main__":
         callbacks=[
             ModelCheckpoint(
                 dirpath="./checkpoints/FaceID",
-                monitor="val_accuracy",
-                filename="{epoch}-{val_accuracy:.4f}-{val_loss:.4f}",
+                monitor="val_accuracy_epoch",
+                filename="{epoch}-{val_accuracy_epoch:.4f}-{val_loss_epoch:.4f}",
                 mode="max",
             ),
             LearningRateMonitor(logging_interval='step'),
@@ -25,4 +25,3 @@ if __name__ == "__main__":
         max_epochs=20,
     )
     trainer.fit(model, datamodule)
-    trainer.test(model, datamodule)
