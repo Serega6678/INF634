@@ -16,6 +16,13 @@ def transforms():
     ])
 
 
+def test_transforms():
+    return Compose([
+        ToTensor(),
+        Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
+    ])
+
+
 class LFWDataset(Dataset):
     OPEN_FACE_DIR_NAME = "LFW_without_Mask/LFW_without_Mask"
     MASKED_FACE_DIR_NAME = "Masked_LFW_Dataset/Masked_LFW_Dataset"
@@ -32,7 +39,8 @@ class LFWDataset(Dataset):
         self._read_data()
 
     def __getitem__(self, idx: int) -> tp.Dict[str, tp.Any]:
-        img = cv2.imread(self.face_paths[idx])
+        path = self.face_paths[idx]
+        img = cv2.imread(path)
         img = cv2.resize(img, (112, 112))
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         if self.transform is not None:
@@ -41,6 +49,7 @@ class LFWDataset(Dataset):
             "img": img,
             "face_type": self.face_is_open[idx],
             "face_idx": self.face_ids[idx],
+            "path": path
         }
 
     def __len__(self) -> int:
@@ -75,6 +84,27 @@ class LFWDataset(Dataset):
     @property
     def num_classes(self) -> int:
         return len(self.name_to_idx)
+
+
+class TestDataset(Dataset):
+    def __init__(self, paths: tp.List[str], transform: Compose = None) -> None:
+        self.paths = paths
+        self.transform = transform
+
+    def __getitem__(self, idx: int) -> tp.Dict[str, tp.Any]:
+        path = self.paths[idx]
+        img = cv2.imread(path)
+        img = cv2.resize(img, (112, 112))
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        if self.transform is not None:
+            img = self.transform(img)
+        return {
+            "img": img,
+            "path": path
+        }
+
+    def __len__(self) -> int:
+        return len(self.paths)
 
 
 if __name__ == "__main__":

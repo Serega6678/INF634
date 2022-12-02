@@ -1,0 +1,6 @@
+/checkpoints
+/wandb/
+/data*
+/*logs*
+/*venv*
+/src/test_accuracy/

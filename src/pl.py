@@ -30,13 +30,12 @@ class ModulePL(pl.LightningModule):
         self.val_roc_auc = AUROC(num_classes=out_dim)
         self.test_roc_auc = AUROC(num_classes=out_dim)
 
-    def forward(self, imgs: torch.Tensor) -> tp.Any:
-        return self.model(imgs)
+    def forward(self, batch: tp.Dict[str, tp.Any]) -> tp.Any:
+        return self.model(batch["img"])
 
     def training_step(self, train_batch: tp.Dict[str, tp.Any], batch_idx: tp.Any) -> torch.Tensor:
-        imgs = train_batch["img"]
         target = train_batch["face_idx"]
-        output = self.forward(imgs)
+        output = self.forward(train_batch)
         loss = self.criterion(output, target)
         preds = output.argmax(-1)
         self.train_acc(preds, target)
@@ -50,9 +49,8 @@ class ModulePL(pl.LightningModule):
         self.log("train_rocauc_epoch", self.train_roc_auc)
 
     def validation_step(self, val_batch: tp.Dict[str, tp.Any], batch_idx: tp.Any) -> None:
-        imgs = val_batch["img"]
         target = val_batch["face_idx"]
-        output = self.forward(imgs)
+        output = self.forward(val_batch)
         loss = self.criterion(output, target)
         preds = output.argmax(-1)
         self.val_acc(preds, target)
@@ -64,30 +62,15 @@ class ModulePL(pl.LightningModule):
         self.log("val_accuracy_epoch", self.val_acc)
         self.log("val_rocauc_epoch", self.val_roc_auc)
 
-    def test_step(self, test_batch: tp.Dict[str, tp.Any], batch_idx: tp.Any) -> None:
-        imgs = test_batch["img"]
-        target = test_batch["face_idx"]
-        output = self.forward(imgs)
-        loss = self.criterion(output, target)
-        preds = output.argmax(-1)
-        self.test_acc(preds, target)
-        self.test_roc_auc(output, target)
-        self.log("test_loss", loss)
-        self.log("test_accuracy", self.test_acc)
-
-    def test_epoch_end(self, outputs) -> None:
-        self.log("test_accuracy_epoch", self.test_acc)
-        self.log("test_rocauc_epoch", self.test_roc_auc)
-
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
         scheduler = MultiStepLR(optimizer, [8, 14], 0.1, verbose=True)
         return {
             "optimizer": optimizer,
-            "lr_scheduler": {
-                "scheduler": scheduler,
-                "interval": "epoch",
-            },
+            # "lr_scheduler": {
+            #     "scheduler": scheduler,
+            #     "interval": "epoch",
+            # },
         }
 
 
