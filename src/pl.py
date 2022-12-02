@@ -67,10 +67,10 @@ class ModulePL(pl.LightningModule):
         scheduler = MultiStepLR(optimizer, [8, 14], 0.1, verbose=True)
         return {
             "optimizer": optimizer,
-            # "lr_scheduler": {
-            #     "scheduler": scheduler,
-            #     "interval": "epoch",
-            # },
+            "lr_scheduler": {
+                "scheduler": scheduler,
+                "interval": "epoch",
+            },
         }
 
 
