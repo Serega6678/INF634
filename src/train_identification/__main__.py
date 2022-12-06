@@ -1,3 +1,4 @@
+import os.path
 import typing as tp
 from tqdm import tqdm
 import numpy as np
@@ -25,7 +26,11 @@ def get_dataset_data(dataset: Dataset) -> tp.Tuple[tp.List[str], np.ndarray, np.
     return paths, targets, face_is_open
 
 
-def transform_path(data: tp.Tuple[str, bool]) -> str:
+def transform_path(data: tp.Tuple[str, bool]) -> tp.Tuple[str, str]:
+    return transform_path_to_normal_lfw(data), transform_path_to_masked_lfw(data)
+
+
+def transform_path_to_masked_lfw(data: tp.Tuple[str, bool]) -> str:
     path, face_is_open = data
     path = path.split("/")
     name, _ = path[-1].split(".")
@@ -35,8 +40,76 @@ def transform_path(data: tp.Tuple[str, bool]) -> str:
         path = "/".join([*path[:-5], "data_transformed", "no_mask_to_mask", "images", filename])
         return path
     else:
+        path = "/".join([*path[:-4], "data_transformed", "no_mask_to_mask", "images", filename])
+        return path
+
+
+def transform_path_to_normal_lfw(data: tp.Tuple[str, bool]) -> str:
+    path, face_is_open = data
+    path = path.split("/")
+    name, _ = path[-1].split(".")
+    name += "_fake"
+    filename = ".".join([name, "png"])
+    if face_is_open:
+        path = "/".join([*path[:-5], "data_transformed", "mask_to_no_mask", "images", filename])
+        return path
+    else:
         path = "/".join([*path[:-4], "data_transformed", "mask_to_no_mask", "images", filename])
         return path
+
+
+def get_paths_exist_mask(paths: tp.List[str]) -> np.ndarray:
+    exists = [os.path.exists(path) for path in tqdm(paths)]
+    return np.array(exists, dtype=bool)
+
+
+def calculate_default_accuracy():
+    test_dataset = TestDataset(paths, transform=test_transforms())
+    test_dataloader = DataLoader(test_dataset, batch_size=32, num_workers=8)
+    preds = trainer.predict(model, test_dataloader, return_predictions=True)
+    preds = torch.concat(preds)
+    preds_open_face, targets_open_face = preds[face_is_open], targets[face_is_open]
+    preds_open_face = preds_open_face.argmax(-1)
+    print(f"Accuracy for open faces: {accuracy_score(targets_open_face, preds_open_face) * 100}%")
+    preds_close_face, targets_close_face = preds[~face_is_open], targets[~face_is_open]
+    preds_close_face = preds_close_face.argmax(-1)
+    print(f"Accuracy for closed faces: {accuracy_score(targets_close_face, preds_close_face) * 100}%")
+
+
+def calculate_print_normal_lfw_accuracy() -> None:
+    test_dataset = TestDataset(normal_paths, transform=test_transforms())
+    test_dataloader = DataLoader(test_dataset, batch_size=32, num_workers=8)
+    preds = trainer.predict(model, test_dataloader, return_predictions=True)
+    preds = torch.concat(preds)
+    print(f"Accuracy for normal-LFW full: {accuracy_score(targets[normal_paths_exist_mask], preds.argmax(-1)) * 100}%")
+    preds_normal_lfw = preds[~face_is_open[normal_paths_exist_mask]]
+    targets_normal_lfw = targets[normal_paths_exist_mask][~face_is_open[normal_paths_exist_mask]]
+    preds_normal_lfw = preds_normal_lfw.argmax(-1)
+    print(f"Accuracy for normal-LFW: {accuracy_score(targets_normal_lfw, preds_normal_lfw) * 100}%")
+
+
+def calculate_print_masked_lfw_accuracy() -> None:
+    test_dataset = TestDataset(masked_paths, transform=test_transforms())
+    test_dataloader = DataLoader(test_dataset, batch_size=32, num_workers=8)
+    preds = trainer.predict(model, test_dataloader, return_predictions=True)
+    preds = torch.concat(preds)
+    print(f"Accuracy for masked-LFW full: {accuracy_score(targets[masked_paths_exist_mask], preds.argmax(-1)) * 100}%")
+    preds_masked_lfw = preds[~face_is_open[masked_paths_exist_mask]]
+    targets_masked_lfw = targets[masked_paths_exist_mask][~face_is_open[masked_paths_exist_mask]]
+    preds_masked_lfw = preds_masked_lfw.argmax(-1)
+    print(f"Accuracy for masked-LFW: {accuracy_score(targets_masked_lfw, preds_masked_lfw) * 100}%")
+
+
+def calculate_print_cycle_lfw_accuracy() -> None:
+    test_dataset = TestDataset(cycle_paths, transform=test_transforms())
+    test_dataloader = DataLoader(test_dataset, batch_size=32, num_workers=8)
+    preds = trainer.predict(model, test_dataloader, return_predictions=True)
+    preds = torch.concat(preds)
+    print(f"Accuracy for cycle-LFW full: {accuracy_score(targets[masked_paths_exist_mask], preds.argmax(-1)) * 100}%")
+    preds_masked_lfw = preds[~face_is_open[masked_paths_exist_mask]]
+    targets_masked_lfw = targets[masked_paths_exist_mask][~face_is_open[masked_paths_exist_mask]]
+    preds_masked_lfw = preds_masked_lfw.argmax(-1)
+    print(f"Accuracy for cycle-LFW: {accuracy_score(targets_masked_lfw, preds_masked_lfw) * 100}%")
 
 
 if __name__ == "__main__":
@@ -65,33 +138,18 @@ if __name__ == "__main__":
     test_dataloader = datamodule.test_dataloader()
     paths, targets, face_is_open = get_dataset_data(test_dataloader.dataset)
 
-    test_dataset = TestDataset(paths, transform=test_transforms())
-    test_dataloader = DataLoader(test_dataset, batch_size=32, num_workers=8)
-
-    preds = trainer.predict(model, test_dataloader, return_predictions=True)
-    preds = torch.concat(preds)
-
-    preds_open_face, targets_open_face = preds[face_is_open], targets[face_is_open]
-
-    preds_open_face = preds_open_face.argmax(-1)
-
-    print(f"Accuracy for open faces: {accuracy_score(targets_open_face, preds_open_face) * 100}%")
-
-    preds_close_face, targets_close_face = preds[~face_is_open], targets[~face_is_open]
-    preds_close_face = preds_close_face.argmax(-1)
-    print(f"Accuracy for closed faces: {accuracy_score(targets_close_face, preds_close_face) * 100}%")
+    calculate_default_accuracy()
 
     transformed_paths = list(map(transform_path, zip(paths, face_is_open)))
-    test_dataset = TestDataset(transformed_paths, transform=test_transforms())
-    test_dataloader = DataLoader(test_dataset, batch_size=32, num_workers=8)
+    normal_paths, masked_paths = list(zip(*transformed_paths))
 
-    preds = trainer.predict(model, test_dataloader, return_predictions=True)
-    preds = torch.concat(preds)
+    normal_paths_exist_mask = get_paths_exist_mask(normal_paths)
+    masked_paths_exist_mask = get_paths_exist_mask(masked_paths)
 
-    preds_masked_lfw, targets_masked_lfw = preds[face_is_open], targets[face_is_open]
-    preds_masked_lfw = preds_masked_lfw.argmax(-1)
-    print(f"Accuracy for masked-LFW: {accuracy_score(targets_masked_lfw, preds_masked_lfw) * 100}%")
+    normal_paths = list(map(lambda x: x[0], filter(lambda x: x[1], zip(normal_paths, normal_paths_exist_mask))))
+    masked_paths = list(map(lambda x: x[0], filter(lambda x: x[0], zip(masked_paths, masked_paths_exist_mask))))
+    cycle_paths = list(map(lambda x: x.replace("no_mask_to_mask", "cycle_transform").replace("fake", "fake_fake"), masked_paths))
 
-    preds_normal_lfw, targets_normal_lfw = preds[~face_is_open], targets[~face_is_open]
-    preds_normal_lfw = preds_normal_lfw.argmax(-1)
-    print(f"Accuracy for normal-LFW: {accuracy_score(targets_normal_lfw, preds_normal_lfw) * 100}%")
+    calculate_print_normal_lfw_accuracy()
+    calculate_print_masked_lfw_accuracy()
+    calculate_print_cycle_lfw_accuracy()
