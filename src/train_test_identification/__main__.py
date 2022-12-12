@@ -1,3 +1,4 @@
+import argparse
 import os.path
 import typing as tp
 from tqdm import tqdm
@@ -11,6 +12,10 @@ from torch.utils.data import Dataset, DataLoader
 
 from src.pl import ModulePL, DataModulePL
 from src.data import TestDataset, test_transforms
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--train", action="store_true")
 
 
 def get_dataset_data(dataset: Dataset) -> tp.Tuple[tp.List[str], np.ndarray, np.ndarray]:
@@ -114,13 +119,17 @@ def calculate_print_cycle_lfw_accuracy() -> None:
 
 if __name__ == "__main__":
     seed_everything(42)
+    args = parser.parse_args()
     datamodule = DataModulePL("./data")
     print("Number of classes:", datamodule.base_dataset.num_classes)
-    model = ModulePL(datamodule.base_dataset.num_classes)
+    if args.train:
+        model = ModulePL(datamodule.base_dataset.num_classes)
+    else:
+        model = ModulePL.load_from_checkpoint("./checkpoints/last.ckpt", out_dim=datamodule.base_dataset.num_classes)
     trainer = Trainer(
         callbacks=[
             ModelCheckpoint(
-                dirpath="./checkpoints/FaceID",
+                dirpath="./checkpoints",
                 monitor="val_accuracy_epoch",
                 filename="{epoch}-{val_accuracy_epoch:.4f}",
                 mode="max",
@@ -131,7 +140,7 @@ if __name__ == "__main__":
         logger=WandbLogger(project="INF634_FaceId"),
         num_sanity_val_steps=2,
         log_every_n_steps=10,
-        max_epochs=20,
+        max_epochs=20 if args.train else 0,
     )
     trainer.fit(model, datamodule)
 

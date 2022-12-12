@@ -6,17 +6,26 @@
    2. Unpack it and move it to the root of the project
    3. Rename "archive" folder into "data" folder
    4. Create "data_transformed" folder
-   5. Create "mask_to_no_mask" and "no_mask_to_mask" folders inside "data_transformed" folder
+   5. Create "mask_to_no_mask", "no_mask_to_mask" and "cycle_transform" folders inside "data_transformed" folder
    6. With pretrained Cycle GAN create normal-LFW and put it in the "mask_to_no_mask" folder
    7. With pretrained Cycle GAN create masked-LFW and put it in the "no_mask_to_mask" folder
-   Note the structure should be "data_transformed/A/images/*_fake.png" where A in {"mask_to_no_mask", "no_mask_to_mask"}
+   8. With pretrained Cycle GAN create cycle-LFW and put it in the "cycle_transform" folder
+   Note the structure should be "data_transformed/A/images/*_fake.png" where A in {"cycle_transform", "mask_to_no_mask", "no_mask_to_mask"}
 2. Installing required modules
     ```
     pip install -r requirements.txt
     ```
 
 ## Launch
-Start training and testing (including GAN-generated photos testing)
+Test checkpoint:
+1. Name it last.ckpt
+2. Put it into checkpoints folder
+3. Run test script
+   ```
+   python -m src.train_test_identification
+   ```
+
+Train & test model:
 ```
-python -m src.train_identification
+python -m src.train_test_identification --train
 ```
