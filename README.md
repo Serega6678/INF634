@@ -39,5 +39,5 @@ python -m src.train_test_identification --train
 mv INF634/* .
 ```
 3. Download data (achieve.zip) from [here](https://www.kaggle.com/datasets/akashguna/lfw-dataset-with-masks)
-4. Put achieve.zip in the root directory
+4. Put achieve.zip in the same directory where CycleGAN.ipynb resides
 3. Run CycleGAN.ipynb to train, test and evaluate CycleGAN (once you ran the notebook, you will get normal-LFW, masked-LFW, cycle-LFW datasets in the folder pytorch-CycleGAN-and-pix2pix).
