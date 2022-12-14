@@ -29,3 +29,13 @@ Train & test model:
 ```
 python -m src.train_test_identification --train
 ```
+
+## Train, test and evaluate CycleGAN
+1. Clone the repository
+2. Run
+```
+mv INF634/* .
+```
+3. Download data (achieve.zip) from [here](https://www.kaggle.com/datasets/akashguna/lfw-dataset-with-masks)
+4. Put achieve.zip in the root directory
+3. Run CycleGAN.ipynb to train, test and evaluate CycleGAN
