@@ -11,6 +11,7 @@
    7. With pretrained Cycle GAN create masked-LFW and put it in the "no_mask_to_mask" folder
    8. With pretrained Cycle GAN create cycle-LFW and put it in the "cycle_transform" folder
    Note the structure should be "data_transformed/A/images/*_fake.png" where A in {"cycle_transform", "mask_to_no_mask", "no_mask_to_mask"}
+   
    ** normal-LFW, masked-LFW, cycle-LFW can be also downloaded [here](https://drive.google.com/drive/folders/1KWRvolS6zHGbqJmcDuXM3HJP5a7x2IIo?usp=sharing)
 2. Installing required modules
     ```
